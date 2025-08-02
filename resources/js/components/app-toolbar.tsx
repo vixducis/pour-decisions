@@ -10,7 +10,7 @@ interface AppToolbarProps {
 
 export function AppToolbar({ className, actions }: AppToolbarProps) {
     return (
-        <div className={cn('flex h-14 items-center justify-between border-b bg-white/90 dark:bg-black/40 backdrop-blur-sm border-white/20 px-4', className)}>
+        <div className={cn('flex h-16 items-center justify-between border-b bg-white/90 dark:bg-black/40 backdrop-blur-sm border-white/20 px-4', className)}>
             <div className="flex items-center space-x-4">
                 <Link href="/" className="text-lg font-semibold">Pour Decisions</Link>
             </div>

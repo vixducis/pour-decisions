@@ -6,6 +6,7 @@ use App\Models\Group;
 use App\Models\GroupUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -94,5 +95,49 @@ class GroupController extends Controller
                 'total_expenses' => $totalExpenses,
             ]
         ]);
+    }
+
+    public function showJoin(string $publicId): Response|RedirectResponse
+    {
+        $group = Group::query()
+            ->where('public_id', $publicId)
+            ->with('users')
+            ->firstOrFail();
+        
+        // Check if user is already a member
+        if ($group->users->contains('user_id', auth()->id())) {
+            return redirect()->route('groups.show', $group);
+        }
+
+        return Inertia::render('groups/join', [
+            'group' => [
+                'id' => $group->id,
+                'name' => $group->name,
+                'public_id' => $group->public_id,
+                'users_count' => $group->users->count(),
+            ]
+        ]);
+    }
+
+    public function join(string $publicId, Request $request): RedirectResponse
+    {
+        $group = Group::where('public_id', $publicId)->firstOrFail();
+        
+        // Check if user is already a member
+        if ($group->users->contains('user_id', auth()->id())) {
+            return redirect()->route('groups.show', $group);
+        }
+
+        $validated = $request->validate([
+            'nickname' => 'required|string|max:255',
+        ]);
+
+        GroupUser::create([
+            'group_id' => $group->id,
+            'user_id' => auth()->id(),
+            'nickname' => $validated['nickname'],
+        ]);
+
+        return redirect()->route('groups.show', $group)->with('success', 'Successfully joined the group!');
     }
 }

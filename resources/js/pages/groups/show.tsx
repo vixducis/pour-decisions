@@ -2,9 +2,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, UserPlus, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
 
 interface GroupUser {
     id: number;
@@ -41,6 +45,19 @@ interface GroupShowProps {
 }
 
 export default function GroupShow({ group }: GroupShowProps) {
+    const [copied, setCopied] = useState(false);
+    const inviteUrl = `${window.location.origin}/join/${group.public_id}`;
+
+    const copyInviteLink = async () => {
+        try {
+            await navigator.clipboard.writeText(inviteUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
+    };
+
     const getStatusColor = (status: Order['status']) => {
         switch (status) {
             case 'pending':
@@ -82,7 +99,46 @@ export default function GroupShow({ group }: GroupShowProps) {
                     {/* Members */}
                     <Card className="border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
                         <CardHeader>
-                            <CardTitle className="text-lg">Members</CardTitle>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg">Members</CardTitle>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" size="sm">
+                                            <UserPlus className="h-4 w-4 mr-2" />
+                                            Invite
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Invite People to {group.name}</DialogTitle>
+                                            <DialogDescription>
+                                                Share this link with people you want to invite to the group
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Label htmlFor="invite-link">Invite Link</Label>
+                                                <div className="flex gap-2 mt-1">
+                                                    <Input
+                                                        id="invite-link"
+                                                        value={inviteUrl}
+                                                        readOnly
+                                                        className="flex-1"
+                                                    />
+                                                    <Button 
+                                                        onClick={copyInviteLink}
+                                                        variant={copied ? "default" : "outline"}
+                                                        size="sm"
+                                                        className={copied ? "bg-green-600 hover:bg-green-700" : ""}
+                                                    >
+                                                        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {group.users.map((user) => (
