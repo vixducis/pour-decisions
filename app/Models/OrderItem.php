@@ -16,6 +16,12 @@ class OrderItem extends Model
     protected $table = 'order_items';
     public $timestamps = false;
 
+    protected $fillable = [
+        'order_id',
+        'item_id',
+        'group_user_id',
+    ];
+
     /**
      * @return BelongsTo<Order,$this>
      */

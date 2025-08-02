@@ -1,7 +1,7 @@
+import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
 import { Head, useForm } from '@inertiajs/react';
 import { Users } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -10,7 +10,6 @@ interface Group {
     id: number;
     name: string;
     public_id: string;
-    users_count: number;
 }
 
 interface JoinGroupProps {

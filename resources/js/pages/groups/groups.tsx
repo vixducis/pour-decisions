@@ -106,11 +106,11 @@ export default function Groups({ groups }: GroupsProps) {
                 </div>
 
                 {groups.length === 0 ? (
-                    <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-lg">
+                    <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-100 shadow-lg dark:from-blue-900/20 dark:to-indigo-900/20">
                         <CardContent className="flex flex-col items-center justify-center py-8">
                             <div className="mb-4 text-6xl">🎉</div>
                             <p className="mb-4 text-lg font-medium text-gray-700 dark:text-gray-300">No groups yet</p>
-                            <p className="mb-6 text-center text-sm text-muted-foreground max-w-md">
+                            <p className="mb-6 max-w-md text-center text-sm text-muted-foreground">
                                 Create your first group to start tracking expenses with others and make managing shared costs fun!
                             </p>
                             <Button onClick={() => setDialogOpen(true)} variant="gradient">
@@ -120,18 +120,21 @@ export default function Groups({ groups }: GroupsProps) {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid gap-0 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-0 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
                         {groups.map((group) => (
-                            <Card key={group.id} className="cursor-pointer transition-all duration-200 hover:shadow-xl md:hover:-translate-y-1 bg-white/50 dark:bg-white/5 backdrop-blur-sm border-white/20 dark:border-white/10 rounded-none first:rounded-t-lg last:rounded-b-lg md:rounded-lg border-b-0 last:border-b md:border-b">
-                                <Link href={`/groups/${group.id}`} className="block">
+                            <Link href={`/groups/${group.id}`} className="block group">
+                                <Card
+                                    key={group.id}
+                                    className="cursor-pointer rounded-none border-b-0 border-white/20 bg-white/50 backdrop-blur-sm transition-all duration-200 group-first:rounded-t-lg group-last:rounded-b-lg group-last:border-b hover:shadow-xl md:rounded-lg md:border-b md:hover:-translate-y-1 dark:border-white/10 dark:bg-white/5"
+                                >
                                     <CardHeader>
                                         <CardTitle className="text-lg font-semibold">{group.name}</CardTitle>
                                         <CardDescription>
                                             {group.users_count} {group.users_count === 1 ? 'member' : 'members'}
                                         </CardDescription>
                                     </CardHeader>
-                                </Link>
-                            </Card>
+                                </Card>
+                            </Link>
                         ))}
                     </div>
                 )}

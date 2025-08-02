@@ -46,7 +46,7 @@ return new class extends Migration
                 ->cascadeOnUpdate();
             $tbl->string('name');
             $tbl->decimal('price');
-            $tbl->boolean('one_off');
+            $tbl->boolean('one_off')->default(0);
             $tbl->timestamps();
         });
 

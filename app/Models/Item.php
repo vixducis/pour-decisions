@@ -19,6 +19,13 @@ class Item extends Model
 {
     protected $table = 'items';
 
+    protected $fillable = [
+        'group_id',
+        'name',
+        'price',
+        'one_off',
+    ];
+
     protected function casts()
     {
         return [

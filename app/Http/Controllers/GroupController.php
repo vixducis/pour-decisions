@@ -4,20 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\GroupUser;
+use App\Models\OrderItem;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class GroupController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(Group::class, 'group');
+    }
+
     public function index(): Response
     {
         $groups = Group::query()
             ->whereHas('users', function ($qry) {
-                $qry->where('user_id', auth()->user()->id);
+                $qry->where('user_id', auth('web')->user()->id);
             })
             ->withCount('users')
             ->orderBy('created_at', 'desc')
@@ -42,27 +51,27 @@ class GroupController extends Controller
 
             GroupUser::create([
                 'group_id' => $group->id,
-                'user_id' => auth()->user()->id,
+                'user_id' => auth('web')->user()->id,
                 'nickname' => $validated['nickname'],
             ]);
         });
 
-        return redirect()->route('groups');
+        return redirect()->route('home');
     }
 
     public function show(Group $group): Response
     {
-        // Ensure user is a member of this group
-        $group->load(['users', 'orders' => function ($query) {
-            $query->orderBy('created_at', 'desc');
-        }]);
-
-        if (!$group->users->contains('user_id', auth()->user()->id)) {
-            abort(403);
-        }
-
-        // Calculate total expenses
-        $totalExpenses = $group->orders->sum('total_amount');
+        $group->load([
+            'users',
+            'orders' => function ($qry) {
+                $qry->orderBy('created_at', 'desc')
+                    ->with(['orderitems.item', 'groupUser.user']);
+            },
+            'items' => function ($qry) {
+                $qry->orderBy('naam', 'asc')
+                    ->where('one_off', false);
+            }
+        ]);
 
         return Inertia::render('groups/show', [
             'group' => [
@@ -72,72 +81,33 @@ class GroupController extends Controller
                 'public_id' => $group->public_id,
                 'created_at' => $group->created_at,
                 'updated_at' => $group->updated_at,
-                'users' => $group->users->map(function ($groupUser) {
-                    return [
-                        'id' => $groupUser->user_id,
-                        'name' => $groupUser->user->name,
-                        'email' => $groupUser->user->email,
-                        'nickname' => $groupUser->nickname,
-                        'avatar' => $groupUser->user->avatar ?? null,
-                        'joined_at' => $groupUser->created_at,
-                    ];
-                }),
-                'orders' => $group->orders->map(function ($order) {
-                    return [
-                        'id' => $order->id,
-                        'title' => $order->title,
-                        'total_amount' => $order->total_amount,
-                        'status' => $order->status,
-                        'created_at' => $order->created_at,
-                        'items_count' => $order->items->count(),
-                    ];
-                }),
-                'total_expenses' => $totalExpenses,
+                'users' => $group->users->map(static fn($groupUser) => [
+                    'id' => $groupUser->user_id,
+                    'name' => $groupUser->user->name,
+                    'email' => $groupUser->user->email,
+                    'nickname' => $groupUser->nickname,
+                    'avatar' => $groupUser->user->avatar ?? null,
+                    'joined_at' => $groupUser->created_at,
+                ]),
+                'orders' => $group->orders->take(3)->map(static fn($order) => [
+                    'id' => $order->id,
+                    'title' => $order->title,
+                    'total_amount' => $order->orderItems->sum(fn(OrderItem $item) => $item->item->price),
+                    'status' => $order->status,
+                    'created_at' => $order->created_at,
+                    'items_count' => $order->orderItems->count(),
+                    'created_by' => $order->groupUser ? [
+                        'nickname' => $order->groupUser->nickname,
+                    ] : null,
+                ]),
+                'items' => $group->items->map(static fn($item) => [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'price' => $item->price,
+                    'one_off' => $item->one_off,
+                    'created_at' => $item->created_at,
+                ]),
             ]
         ]);
-    }
-
-    public function showJoin(string $publicId): Response|RedirectResponse
-    {
-        $group = Group::query()
-            ->where('public_id', $publicId)
-            ->with('users')
-            ->firstOrFail();
-        
-        // Check if user is already a member
-        if ($group->users->contains('user_id', auth()->id())) {
-            return redirect()->route('groups.show', $group);
-        }
-
-        return Inertia::render('groups/join', [
-            'group' => [
-                'id' => $group->id,
-                'name' => $group->name,
-                'public_id' => $group->public_id,
-                'users_count' => $group->users->count(),
-            ]
-        ]);
-    }
-
-    public function join(string $publicId, Request $request): RedirectResponse
-    {
-        $group = Group::where('public_id', $publicId)->firstOrFail();
-        
-        // Check if user is already a member
-        if ($group->users->contains('user_id', auth()->id())) {
-            return redirect()->route('groups.show', $group);
-        }
-
-        $validated = $request->validate([
-            'nickname' => 'required|string|max:255',
-        ]);
-
-        GroupUser::create([
-            'group_id' => $group->id,
-            'user_id' => auth()->id(),
-            'nickname' => $validated['nickname'],
-        ]);
-
-        return redirect()->route('groups.show', $group)->with('success', 'Successfully joined the group!');
     }
 }
