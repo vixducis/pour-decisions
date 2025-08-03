@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Copy, Plus, Trash2 } from 'lucide-react';
 
 interface OrderItem {
     id: number;
@@ -33,6 +33,12 @@ interface OrdersProps {
 }
 
 export default function GroupOrders({ group, orders }: OrdersProps) {
+    const handleDeleteOrder = (orderId: number) => {
+        if (confirm('Are you sure you want to delete this order?')) {
+            router.delete(route('orders.destroy', orderId));
+        }
+    };
+
     return (
         <AppLayout backAction={{ type: 'link', href: route('groups.show', group.id) }}>
             <Head title={`Orders - ${group.name}`} />
@@ -75,7 +81,7 @@ export default function GroupOrders({ group, orders }: OrdersProps) {
 
                                 <CardContent>
                                     {order.items.length > 0 && (
-                                        <div className="">
+                                        <div>
                                             <h3 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">Items</h3>
                                             <div className="divide-y divide-gray-200 dark:divide-gray-700">
                                                 {order.items.map((item, index) => (
@@ -90,6 +96,22 @@ export default function GroupOrders({ group, orders }: OrdersProps) {
                                         </div>
                                     )}
                                 </CardContent>
+                                <CardFooter className="flex justify-end gap-x-2">
+                                    <Link href={route('orders.create', { group: group.id, duplicate: order.id })}>
+                                        <Button variant="outline">
+                                            <Copy className="mr-2 h-4 w-4" />
+                                            Duplicate Order
+                                        </Button>
+                                    </Link>
+                                    <Button 
+                                        variant="destructive" 
+                                        onClick={() => handleDeleteOrder(order.id)}
+                                        className=""
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete
+                                    </Button>
+                                </CardFooter>
                             </Card>
                         ))}
                     </div>

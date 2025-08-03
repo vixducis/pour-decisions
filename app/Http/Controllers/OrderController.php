@@ -70,6 +70,14 @@ class OrderController extends Controller
             'items' => fn($qry) => $qry->orderBy('name'),
         ]);
 
+        $duplicateOrder = null;
+        if ($request->has('duplicate')) {
+            $duplicateOrder = Order::query()
+                ->where('group_id', $group->id)
+                ->with(['orderItems.item', 'orderItems.groupUser.user'])
+                ->find($request->get('duplicate'));
+        }
+
         return Inertia::render('orders/create', [
             'group' => [
                 'id' => $group->id,
@@ -91,7 +99,18 @@ class OrderController extends Controller
                         'one_off' => $item->one_off,
                     ];
                 })->all(),
-            ]
+            ],
+            'duplicateOrder' => $duplicateOrder ? [
+                'id' => $duplicateOrder->id,
+                'items' => $duplicateOrder->orderItems->map(function ($orderItem) {
+                    return [
+                        'itemId' => $orderItem->item->id,
+                        'userId' => $orderItem->group_user_id,
+                        'itemName' => $orderItem->item->name,
+                        'itemPrice' => $orderItem->item->price,
+                    ];
+                })->all(),
+            ] : null,
         ]);
     }
 
@@ -142,5 +161,19 @@ class OrderController extends Controller
         });
 
         return redirect()->route('groups.show', $group)->with('success', 'Order created successfully!');
+    }
+
+    /**
+     * Delete an order.
+     */
+    public function destroy(Order $order): RedirectResponse
+    {
+        $group = $order->group;        
+        if (auth('web')->user()->cannot('update', $group)) {
+            abort(HttpResponse::HTTP_FORBIDDEN);
+        }
+
+        $order->delete();
+        return redirect()->route('groups.orders', $group)->with('success', 'Order deleted successfully!');
     }
 }

@@ -30,8 +30,21 @@ interface GroupDetails {
     items: Item[];
 }
 
+interface DuplicateOrderItem {
+    itemId: number;
+    userId: number;
+    itemName: string;
+    itemPrice: string;
+}
+
+interface DuplicateOrder {
+    id: number;
+    items: DuplicateOrderItem[];
+}
+
 interface OrderCreateProps {
     group: GroupDetails;
+    duplicateOrder: DuplicateOrder | null;
 }
 
 interface SelectedItem {
@@ -69,37 +82,22 @@ function selectedItemsReducer(state: SelectionMap, action: ActionProps): Selecti
     return newState;
 }
 
-export default function OrderCreate({ group }: OrderCreateProps) {
+export default function OrderCreate({ group, duplicateOrder }: OrderCreateProps) {
     const [currentStep, setCurrentStep] = useState<1 | 2>(1);
-    const [selectedItems, dispatch] = useReducer(selectedItemsReducer, new Map<number, SelectedItem>());
+
+    const getInitialSelectedItems = (() => {
+        const map = new Map<number, SelectedItem>();
+        if (duplicateOrder !== null) {
+            duplicateOrder.items.forEach((item) => {
+                map.set(item.userId, item);
+            });
+        }
+
+        return map;
+    })();
+
+    const [selectedItems, dispatch] = useReducer(selectedItemsReducer, getInitialSelectedItems);
     const formatMoney = useMoneyFormat(group.currency);
-
-    const calculateTotal = () => {
-        return Array.from(selectedItems.values()).reduce((total, item) => total + parseFloat(item.itemPrice), 0);
-    };
-
-    const getItemSummary = () => {
-        const itemCounts = new Map<string, { count: number; price: number; name: string }>();
-
-        Array.from(selectedItems.values()).forEach((item) => {
-            const key = item.itemName;
-            if (itemCounts.has(key)) {
-                const existing = itemCounts.get(key)!;
-                itemCounts.set(key, {
-                    ...existing,
-                    count: existing.count + 1,
-                });
-            } else {
-                itemCounts.set(key, {
-                    count: 1,
-                    price: parseFloat(item.itemPrice),
-                    name: item.itemName,
-                });
-            }
-        });
-
-        return Array.from(itemCounts.values());
-    };
 
     return (
         <AppLayout
@@ -119,9 +117,7 @@ export default function OrderCreate({ group }: OrderCreateProps) {
                     />
                 )}
 
-                {currentStep === 2 && (
-                    <Summary groupId={group.id} selection={selectedItems} previous={() => setCurrentStep(1)} formatMoney={formatMoney} />
-                )}
+                {currentStep === 2 && <Summary groupId={group.id} selection={selectedItems} formatMoney={formatMoney} />}
             </div>
         </AppLayout>
     );
@@ -237,10 +233,9 @@ const Item: FC<{
 
 const Summary: FC<{
     groupId: number;
-    previous: () => void;
     selection: SelectionMap;
     formatMoney: (input: number) => string;
-}> = ({ groupId, previous, selection, formatMoney }) => {
+}> = ({ groupId, selection, formatMoney }) => {
     const summary = useMemo(() => {
         const selectionValues = Array.from(selection.values());
         const itemCounts = new Map<string, { count: number; price: number; name: string }>();

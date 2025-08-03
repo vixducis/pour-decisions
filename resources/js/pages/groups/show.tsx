@@ -158,10 +158,21 @@ export default function GroupShow({ group }: GroupShowProps) {
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className="font-semibold">
-                                                        {order.total_amount}
-                                                    </p>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-right">
+                                                        <p className="font-semibold">
+                                                            {order.total_amount}
+                                                        </p>
+                                                    </div>
+                                                    <Link href={route('orders.create', { group: group.id, duplicate: order.id })}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 w-8 p-0"
+                                                        >
+                                                            <Copy className="h-4 w-4" />
+                                                        </Button>
+                                                    </Link>
                                                 </div>
                                             </div>
                                         ))}

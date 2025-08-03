@@ -15,6 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('groups/{group}/items/{item}', [ItemController::class, 'destroy'])->name('groups.items.destroy');
     Route::get('groups/{group}/orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
     Route::get('join/{public_id}', [GroupJoinController::class, 'show'])->name('groups.join');
     Route::post('join/{public_id}', [GroupJoinController::class, 'store'])->name('groups.join');
 });
