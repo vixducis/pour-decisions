@@ -1,8 +1,10 @@
+import AppLayout from '@/layouts/app-layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
+import { useInitials } from '@/hooks/use-initials';
+import { useMoneyFormat } from '@/hooks/use-money-format';
 import { Head, router } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { useState } from 'react';
@@ -44,16 +46,8 @@ interface SelectedItem {
 export default function OrderCreate({ group }: OrderCreateProps) {
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedItems, setSelectedItems] = useState<Map<number, SelectedItem>>(new Map());
-
-    const getInitials = (name: string | null) => {
-        if (!name) return '??';
-        return name
-            .split(' ')
-            .map((word) => word[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2);
-    };
+    const getInitials = useInitials();
+    const formatMoney = useMoneyFormat(group.currency);
 
     const handleItemSelect = (userId: number, item: Item, user: GroupUser) => {
         const newSelectedItems = new Map(selectedItems);
@@ -190,9 +184,7 @@ export default function OrderCreate({ group }: OrderCreateProps) {
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <p className="font-semibold">
-                                                            {group.currency} {item.price}
-                                                        </p>
+                                                        <p className="font-semibold">{formatMoney(Number(item.price))}</p>
                                                     </div>
                                                 ))
                                             )}
@@ -232,18 +224,14 @@ export default function OrderCreate({ group }: OrderCreateProps) {
                                                 <p className="font-medium">
                                                     {item.count}x {item.name}
                                                 </p>
-                                                <p className="font-semibold">
-                                                    {group.currency} {(item.count * item.price).toFixed(2)}
-                                                </p>
+                                                <p className="font-semibold">{formatMoney(item.price)}</p>
                                             </div>
                                         ))}
 
                                         <div className="border-t border-white/10 pt-3">
                                             <div className="flex items-center justify-between text-lg font-bold">
                                                 <p>Total</p>
-                                                <p>
-                                                    {group.currency} {calculateTotal().toFixed(2)}
-                                                </p>
+                                                <p>{formatMoney(calculateTotal())}</p>
                                             </div>
                                         </div>
                                     </div>

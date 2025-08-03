@@ -67,7 +67,7 @@ class OrderController extends Controller
 
         $group->load([
             'users.user',
-            'items' => fn ($qry) => $qry->orderBy('name'),
+            'items' => fn($qry) => $qry->orderBy('name'),
         ]);
 
         return Inertia::render('orders/create', [
@@ -83,7 +83,7 @@ class OrderController extends Controller
                         'avatar' => null,
                     ];
                 })->all(),
-                'items' => $group->items->map(function ($item) {
+                'items' => $group->items->map(static function ($item) {
                     return [
                         'id' => $item->id,
                         'name' => $item->name,
@@ -105,22 +105,22 @@ class OrderController extends Controller
             ->findOrFail($request->getGroupId());
 
         $currentGroupUser = $group->users->first(
-            fn (GroupUser $user) => $user->user_id === auth('web')->user()->id
+            fn(GroupUser $user) => $user->user_id === auth('web')->user()->id
         );
-        
+
         if ($currentGroupUser === null) {
             abort(HttpResponse::HTTP_FORBIDDEN);
         }
 
         // Verify all items belong to this group
-        $itemIds = collect($request->getItemIds())->unique();        
-        if (!$itemIds->every(fn($id) => $group->items->contains(fn (Item $item) => $item->id === $id))) {
+        $itemIds = collect($request->getItemIds())->unique();
+        if (!$itemIds->every(fn($id) => $group->items->contains(fn(Item $item) => $item->id === $id))) {
             abort(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, 'One or more items do not belong to this group');
         }
 
         // Verify all users are members of this group
-        $userIds = collect($request->getUserIds())->unique();        
-        if (!$userIds->every(fn($id) => $group->users->contains(fn (GroupUser $user) => $user->id === $id))) {
+        $userIds = collect($request->getUserIds())->unique();
+        if (!$userIds->every(fn($id) => $group->users->contains(fn(GroupUser $user) => $user->id === $id))) {
             abort(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, 'One or more users are not members of this group');
         }
 
@@ -142,5 +142,5 @@ class OrderController extends Controller
         });
 
         return redirect()->route('groups.show', $group)->with('success', 'Order created successfully!');
-    }    
+    }
 }

@@ -20,7 +20,6 @@ interface GroupUser {
 interface Order {
     id: number;
     total_amount: string;
-    status: 'pending' | 'active' | 'completed';
     created_at: string;
     items_count: number;
     created_by?: {
@@ -40,8 +39,6 @@ interface GroupDetails {
     id: number;
     name: string;
     public_id: string;
-    created_at: string;
-    updated_at: string;
     users: GroupUser[];
     orders: Order[];
     items: Item[];
