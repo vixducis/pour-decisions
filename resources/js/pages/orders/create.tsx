@@ -5,7 +5,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { useMoneyFormat } from '@/hooks/use-money-format';
 import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { FC, useMemo, useReducer, useState } from 'react';
 
 interface GroupUser {
@@ -102,7 +102,9 @@ export default function OrderCreate({ group }: OrderCreateProps) {
     };
 
     return (
-        <AppLayout backHref={`/groups/${group.id}`}>
+        <AppLayout
+            backAction={currentStep === 1 ? { type: 'link', href: `/groups/${group.id}` } : { type: 'callback', action: () => setCurrentStep(1) }}
+        >
             <Head title={`Create Order - ${group.name}`} />
 
             <div className="space-y-6">
@@ -284,13 +286,7 @@ const Summary: FC<{
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold tracking-tight">Summary</h1>
-                <Button variant="ghost" onClick={previous}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Selection
-                </Button>
-            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Summary</h1>
 
             <Card className="border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
                 <CardContent>

@@ -1,21 +1,20 @@
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppToolbar } from '@/components/app-toolbar';
+import { BackAction } from '@/types';
 import { type PropsWithChildren } from 'react';
 
 interface AppSidebarLayoutProps extends PropsWithChildren {
     toolbarActions?: React.ReactNode;
-    backHref?: string;
+    backAction?: BackAction;
 }
 
-export default function AppSidebarLayout({ children, toolbarActions, backHref }: AppSidebarLayoutProps) {
+export default function AppSidebarLayout({ children, toolbarActions, backAction }: AppSidebarLayoutProps) {
     return (
         <AppShell>
-            <div className="flex flex-col h-full">
-                <AppToolbar actions={toolbarActions} backHref={backHref} />
-                <AppContent className="overflow-x-hidden flex-1">
-                    {children}
-                </AppContent>
+            <div className="flex h-full flex-col">
+                <AppToolbar actions={toolbarActions} backAction={backAction} />
+                <AppContent className="flex-1 overflow-x-hidden">{children}</AppContent>
             </div>
         </AppShell>
     );

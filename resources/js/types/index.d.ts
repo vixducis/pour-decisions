@@ -36,3 +36,15 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+interface BackLinkAction {
+    type: "link";
+    href: string;
+}
+
+interface BackCallbackAction {
+    type: "callback";
+    action: () => void;
+}
+
+type BackAction = BackLinkAction | BackCallbackAction

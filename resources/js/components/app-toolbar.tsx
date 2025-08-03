@@ -1,26 +1,27 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { BackAction } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Settings, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
+import { FC } from 'react';
 
 interface AppToolbarProps {
     className?: string;
     actions?: React.ReactNode;
-    backHref?: string;
+    backAction?: BackAction;
 }
 
-export function AppToolbar({ className, actions, backHref }: AppToolbarProps) {
+export function AppToolbar({ className, actions, backAction }: AppToolbarProps) {
     return (
-        <div className={cn('flex h-16 items-center justify-between border-b bg-white/90 dark:bg-black/40 backdrop-blur-sm border-white/20 px-4', className)}>
+        <div
+            className={cn(
+                'flex h-16 items-center justify-between border-b border-white/20 bg-white/90 px-4 backdrop-blur-sm dark:bg-black/40',
+                className,
+            )}
+        >
             <div className="flex items-center space-x-4">
-                {backHref && (
-                    <Link href={backHref}>
-                        <Button variant="ghost" size="sm">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                    </Link>
-                )}
-                <Link href="/" className="text-xl font-extrabold tracking-tight hover:opacity-80 transition-opacity">
+                {backAction !== undefined && <BackButton action={backAction} />}
+                <Link href="/" className="text-xl font-extrabold tracking-tight transition-opacity hover:opacity-80">
                     Pour Decisions
                 </Link>
             </div>
@@ -34,3 +35,21 @@ export function AppToolbar({ className, actions, backHref }: AppToolbarProps) {
         </div>
     );
 }
+
+const BackButton: FC<{ action: BackAction }> = ({ action }) => {
+    if (action.type === 'link') {
+        return (
+            <Link href={action.href}>
+                <Button variant="ghost" size="sm">
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
+            </Link>
+        );
+    }
+
+    return (
+        <Button variant="ghost" size="sm" onClick={action.action}>
+            <ArrowLeft className="h-4 w-4" />
+        </Button>
+    );
+};

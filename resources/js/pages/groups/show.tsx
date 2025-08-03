@@ -97,19 +97,6 @@ export default function GroupShow({ group }: GroupShowProps) {
         }
     };
 
-    const getStatusColor = (status: Order['status']) => {
-        switch (status) {
-            case 'pending':
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
-            case 'active':
-                return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
-            case 'completed':
-                return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
-            default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300';
-        }
-    };
-
     const getInitials = (name: string | null) => {
         if (!name) return '??';
         return name

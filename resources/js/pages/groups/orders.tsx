@@ -1,6 +1,6 @@
-import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 
@@ -34,7 +34,7 @@ interface OrdersProps {
 
 export default function GroupOrders({ group, orders }: OrdersProps) {
     return (
-        <AppLayout backHref={route('groups.show', group.id)}>
+        <AppLayout backAction={{ type: 'link', href: route('groups.show', group.id) }}>
             <Head title={`Orders - ${group.name}`} />
 
             <div className="space-y-6">
@@ -55,7 +55,7 @@ export default function GroupOrders({ group, orders }: OrdersProps) {
                 ) : (
                     <div className="grid gap-6">
                         {orders.map((order) => (
-                            <Card key={order.id} className="border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5 gap-4">
+                            <Card key={order.id} className="gap-4 border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
                                 <CardHeader>
                                     <div className="flex items-start justify-between">
                                         <div className="space-y-1">
@@ -65,7 +65,7 @@ export default function GroupOrders({ group, orders }: OrdersProps) {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-2xl font-bold leading-none">{order.total_amount}</p>
+                                            <p className="text-2xl leading-none font-bold">{order.total_amount}</p>
                                             <p className="text-sm text-muted-foreground">
                                                 {order.items_count} {order.items_count === 1 ? 'item' : 'items'}
                                             </p>
