@@ -67,7 +67,10 @@ class OrderController extends Controller
 
         $group->load([
             'users.user',
-            'items' => fn($qry) => $qry->orderBy('name'),
+            'items' => function ($qry) {
+                $qry->orderBy('name')
+                    ->where('one_off', false);
+            },
         ]);
 
         $duplicateOrder = null;
