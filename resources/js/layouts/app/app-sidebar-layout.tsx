@@ -5,13 +5,14 @@ import { type PropsWithChildren } from 'react';
 
 interface AppSidebarLayoutProps extends PropsWithChildren {
     toolbarActions?: React.ReactNode;
+    backHref?: string;
 }
 
-export default function AppSidebarLayout({ children, toolbarActions }: AppSidebarLayoutProps) {
+export default function AppSidebarLayout({ children, toolbarActions, backHref }: AppSidebarLayoutProps) {
     return (
         <AppShell>
             <div className="flex flex-col h-full">
-                <AppToolbar actions={toolbarActions} />
+                <AppToolbar actions={toolbarActions} backHref={backHref} />
                 <AppContent className="overflow-x-hidden flex-1">
                     {children}
                 </AppContent>

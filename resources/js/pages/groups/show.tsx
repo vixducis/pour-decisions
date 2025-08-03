@@ -12,17 +12,14 @@ import { FormEventHandler, useState } from 'react';
 
 interface GroupUser {
     id: number;
-    name: string;
     email: string;
     nickname: string;
     avatar?: string;
-    joined_at: string;
 }
 
 interface Order {
     id: number;
-    title: string;
-    total_amount: number;
+    total_amount: string;
     status: 'pending' | 'active' | 'completed';
     created_at: string;
     items_count: number;
@@ -42,7 +39,6 @@ interface Item {
 interface GroupDetails {
     id: number;
     name: string;
-    currency: string;
     public_id: string;
     created_at: string;
     updated_at: string;
@@ -134,7 +130,7 @@ export default function GroupShow({ group }: GroupShowProps) {
             <div className="space-y-6">
                 <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
                     {/* Add Order Card */}
-                    <Link href={route('orders.create', group.id)} className="col-span-full lg:col-span-1">
+                    <Link href={route('orders.create', group.id)} className="col-span-full lg:col-span-2 xl:col-span-1">
                         <Card className="flex h-full cursor-pointer items-center justify-center border-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transition-all duration-200 hover:from-purple-600 hover:to-pink-600 hover:shadow-xl">
                             <div className="py-8 text-center">
                                 <Plus className="mx-auto mb-3 h-8 w-8" />
@@ -150,9 +146,11 @@ export default function GroupShow({ group }: GroupShowProps) {
                             <CardHeader>
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-lg">Recent Orders</CardTitle>
-                                    <Button variant="outline" size="sm">
-                                        View All
-                                    </Button>
+                                    <Link href={route('groups.orders', group.id)}>
+                                        <Button variant="outline" size="sm">
+                                            View All
+                                        </Button>
+                                    </Link>
                                 </div>
                             </CardHeader>
                             <CardContent className="lg:max-h-64 lg:overflow-y-auto">
@@ -168,19 +166,17 @@ export default function GroupShow({ group }: GroupShowProps) {
                                                 className="group flex cursor-pointer items-center justify-between py-2 transition-colors hover:bg-white/5"
                                             >
                                                 <div className="flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <h3 className="font-medium">{order.title}</h3>
-                                                        <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
-                                                    </div>
                                                     <p className="text-sm">
-                                                        {order.created_by?.nickname || 'Unknown'} • <span className='text-muted-foreground'>{order.items_count} {order.items_count === 1 ? 'item' : 'items'}</span>
-                                                        
+                                                        {order.created_by?.nickname || 'Unknown'} •{' '}
+                                                        <span className="text-muted-foreground">
+                                                            {order.items_count} {order.items_count === 1 ? 'item' : 'items'}
+                                                        </span>
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="font-semibold">
-                                                        {group.currency} {order.total_amount.toFixed(2)}
+                                                        {order.total_amount}
                                                     </p>
                                                 </div>
                                             </div>
@@ -232,7 +228,7 @@ export default function GroupShow({ group }: GroupShowProps) {
                             {group.users.map((user) => (
                                 <div key={user.id} className="flex items-center gap-3">
                                     <Avatar className="h-10 w-10">
-                                        <AvatarImage src={user.avatar} alt={user.name} />
+                                        <AvatarImage src={user.avatar} alt={user.nickname} />
                                         <AvatarFallback userId={user.id}>{getInitials(user.nickname)}</AvatarFallback>
                                     </Avatar>
                                     <div className="min-w-0 flex-1">
@@ -327,7 +323,7 @@ export default function GroupShow({ group }: GroupShowProps) {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <p className="font-semibold">
-                                                    {group.currency} {item.price}
+                                                    {item.price}
                                                 </p>
                                                 <Button
                                                     variant="ghost"

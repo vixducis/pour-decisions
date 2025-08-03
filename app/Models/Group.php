@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Cknow\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -64,5 +65,13 @@ class Group extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'group_id');
+    }
+
+    /**
+     * Formats a price string into a money object.
+     */
+    public function parsePrice(string $price): Money
+    {
+        return money($price, $this->currency);
     }
 }

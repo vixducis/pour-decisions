@@ -29,6 +29,7 @@ class Item extends Model
     protected function casts()
     {
         return [
+            'price' => 'decimal:2',
             'one_off' => 'boolean',
         ];
     }

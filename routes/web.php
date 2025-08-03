@@ -10,6 +10,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [GroupController::class, 'index'])->name('home');
     Route::post('groups', [GroupController::class, 'store'])->name('groups.store');
     Route::get('groups/{group}', [GroupController::class, 'show'])->name('groups.show');
+    Route::get('groups/{group}/orders', [OrderController::class, 'index'])->name('groups.orders');
     Route::post('groups/{group}/items', [ItemController::class, 'store'])->name('groups.items.store');
     Route::delete('groups/{group}/items/{item}', [ItemController::class, 'destroy'])->name('groups.items.destroy');
     Route::get('groups/{group}/orders/create', [OrderController::class, 'create'])->name('orders.create');

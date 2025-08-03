@@ -127,7 +127,7 @@ export default function OrderCreate({ group }: OrderCreateProps) {
     const canProceedToStep2 = selectedItems.size > 0;
 
     return (
-        <AppLayout>
+        <AppLayout backHref={`/groups/${group.id}`}>
             <Head title={`Create Order - ${group.name}`} />
 
             <div className="space-y-6">

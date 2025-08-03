@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreOrderRequest;
 use App\Models\Group;
 use App\Models\GroupUser;
 use App\Models\Item;
@@ -16,6 +17,48 @@ use Inertia\Response;
 
 class OrderController extends Controller
 {
+    /**
+     * Shows an overview of all orders in a group.
+     */
+    public function index(Group $group): Response
+    {
+        if (auth('web')->user()->cannot('view', $group)) {
+            abort(HttpResponse::HTTP_FORBIDDEN);
+        }
+
+        $group->load([
+            'orders' => function ($qry) {
+                $qry->orderBy('created_at', 'desc')
+                    ->with(['orderItems.item', 'groupUser']);
+            },
+        ]);
+
+        return Inertia::render('groups/orders', [
+            'group' => [
+                'id' => $group->id,
+                'name' => $group->name,
+            ],
+            'orders' => $group->orders->map(static fn($order) => [
+                'id' => $order->id,
+                'total_amount' => $order->getTotal($group)->format(),
+                'created_at' => $order->created_at,
+                'items_count' => $order->orderItems->count(),
+                'created_by' => $order->groupUser ? [
+                    'nickname' => $order->groupUser->nickname,
+                ] : null,
+                'items' => $order->orderItems->map(fn($orderItem) => [
+                    'id' => $orderItem->id,
+                    'name' => $orderItem->item->name,
+                    'price' => $group->parsePrice($orderItem->item->price)->format(),
+                    'user_nickname' => $orderItem->groupUser ? $orderItem->groupUser->nickname : null,
+                ])->all(),
+            ])->all(),
+        ]);
+    }
+
+    /**
+     * Shows the form to create a new order.
+     */
     public function create(Group $group, Request $request): Response
     {
         if ($request->user()->cannot('update', $group)) {
@@ -37,9 +80,9 @@ class OrderController extends Controller
                         'id' => $groupUser->id,
                         'email' => $groupUser->user->email,
                         'nickname' => $groupUser->nickname,
-                        'avatar' => $groupUser->user->avatar ?? null,
+                        'avatar' => null,
                     ];
-                }),
+                })->all(),
                 'items' => $group->items->map(function ($item) {
                     return [
                         'id' => $item->id,
@@ -47,26 +90,22 @@ class OrderController extends Controller
                         'price' => $item->price,
                         'one_off' => $item->one_off,
                     ];
-                }),
+                })->all(),
             ]
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Handles the form callback of creating a new order.
+     */
+    public function store(StoreOrderRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'group_id' => 'required|exists:groups,id',
-            'items' => 'required|array|min:1',
-            'items.*.item_id' => 'required|exists:items,id',
-            'items.*.user_id' => 'required|exists:users,id',
-        ]);
-
         $group = Group::query()
             ->with(['users', 'items'])
-            ->findOrFail($validated['group_id']);
+            ->findOrFail($request->getGroupId());
 
         $currentGroupUser = $group->users->first(
-            fn (GroupUser $user) => $user->user_id === $request->user()->id
+            fn (GroupUser $user) => $user->user_id === auth('web')->user()->id
         );
         
         if ($currentGroupUser === null) {
@@ -74,18 +113,18 @@ class OrderController extends Controller
         }
 
         // Verify all items belong to this group
-        $itemIds = collect($validated['items'])->pluck('item_id')->unique();        
+        $itemIds = collect($request->getItemIds())->unique();        
         if (!$itemIds->every(fn($id) => $group->items->contains(fn (Item $item) => $item->id === $id))) {
             abort(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, 'One or more items do not belong to this group');
         }
 
         // Verify all users are members of this group
-        $userIds = collect($validated['items'])->pluck('user_id')->unique();        
+        $userIds = collect($request->getUserIds())->unique();        
         if (!$userIds->every(fn($id) => $group->users->contains(fn (GroupUser $user) => $user->id === $id))) {
             abort(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, 'One or more users are not members of this group');
         }
 
-        DB::transaction(function () use ($validated, $group, $currentGroupUser) {
+        DB::transaction(function () use ($request, $group, $currentGroupUser) {
             // Create the order
             $order = new Order;
             $order->group()->associate($group);
@@ -93,7 +132,7 @@ class OrderController extends Controller
             $order->save();
 
             // Create order items
-            foreach ($validated['items'] as $orderItem) {
+            foreach ($request->getItems() as $orderItem) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'item_id' => $orderItem['item_id'],
@@ -103,5 +142,5 @@ class OrderController extends Controller
         });
 
         return redirect()->route('groups.show', $group)->with('success', 'Order created successfully!');
-    }
+    }    
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Cknow\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -42,5 +43,17 @@ class Order extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'order_id');
+    }
+
+    /**
+     * Calculates the total price of the order as a money object.
+     */
+    public function getTotal(Group $group): Money
+    {
+        $prices = $this->orderItems->map(
+            static fn (OrderItem $item) => $group->parsePrice($item->item->price)
+        );
+
+        return Money::sum(...$prices);
     }
 }

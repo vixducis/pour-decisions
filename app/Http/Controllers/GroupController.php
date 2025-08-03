@@ -77,23 +77,16 @@ class GroupController extends Controller
             'group' => [
                 'id' => $group->id,
                 'name' => $group->name,
-                'currency' => $group->currency,
                 'public_id' => $group->public_id,
-                'created_at' => $group->created_at,
-                'updated_at' => $group->updated_at,
                 'users' => $group->users->map(static fn($groupUser) => [
                     'id' => $groupUser->user_id,
-                    'name' => $groupUser->user->name,
                     'email' => $groupUser->user->email,
                     'nickname' => $groupUser->nickname,
                     'avatar' => $groupUser->user->avatar ?? null,
-                    'joined_at' => $groupUser->created_at,
                 ]),
                 'orders' => $group->orders->take(3)->map(static fn($order) => [
                     'id' => $order->id,
-                    'title' => $order->title,
-                    'total_amount' => $order->orderItems->sum(fn(OrderItem $item) => $item->item->price),
-                    'status' => $order->status,
+                    'total_amount' => $order->getTotal($group)->format(),
                     'created_at' => $order->created_at,
                     'items_count' => $order->orderItems->count(),
                     'created_by' => $order->groupUser ? [
@@ -103,7 +96,7 @@ class GroupController extends Controller
                 'items' => $group->items->map(static fn($item) => [
                     'id' => $item->id,
                     'name' => $item->name,
-                    'price' => $item->price,
+                    'price' => $group->parsePrice($item->price)->format(),
                     'one_off' => $item->one_off,
                     'created_at' => $item->created_at,
                 ]),
