@@ -1,0 +1,21 @@
+{
+  "name": "Pour Decisions",
+  "short_name": "Pour Decisions",
+  "description": "Track expenses with others and make managing shared costs fun",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "categories": ["finance", "productivity", "social"],
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

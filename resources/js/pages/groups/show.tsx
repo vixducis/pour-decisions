@@ -137,7 +137,7 @@ export default function GroupShow({ group, currentUserBalance }: GroupShowProps)
 
                     {/* Recent Orders */}
                     <div className="lg:col-span-full xl:col-span-2">
-                        <Card className="border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
+                        <Card className="border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5 h-full">
                             <CardHeader>
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-lg">Recent Orders</CardTitle>
