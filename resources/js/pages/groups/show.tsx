@@ -194,7 +194,7 @@ export default function GroupShow({ group, currentUserBalance }: GroupShowProps)
                     </div>
 
                     {/* Members */}
-                    <Card className="border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
+                    <Card className="border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5 min-w-0">
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg">Members</CardTitle>
