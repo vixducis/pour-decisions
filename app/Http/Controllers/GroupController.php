@@ -69,7 +69,7 @@ class GroupController extends Controller
             'orders.orderItems.item',
             'orders.orderItems.groupUser.user',
             'items' => function ($qry) {
-                $qry->orderBy('naam', 'asc')
+                $qry->orderBy('name', 'asc')
                     ->where('one_off', false);
             }
         ]);
