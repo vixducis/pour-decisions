@@ -61,7 +61,7 @@ class GroupController extends Controller
     public function show(Group $group): Response
     {
         $group->load([
-            'users.user',
+            'users' => fn ($qry) => $qry->orderBy('nickname')->with('user'),
             'orders' => function ($qry) {
                 $qry->orderBy('created_at', 'desc')
                     ->with(['orderitems.item', 'groupUser.user']);
@@ -81,7 +81,7 @@ class GroupController extends Controller
                 'public_id' => $group->public_id,
                 'currency' => $group->currency,
                 'users' => $group->users->map(static fn($groupUser) => [
-                    'id' => $groupUser->user_id,
+                    'id' => $groupUser->id,
                     'email' => $groupUser->user->email,
                     'nickname' => $groupUser->nickname,
                     'avatar' => $groupUser->user->avatar ?? null,

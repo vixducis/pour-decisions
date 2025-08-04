@@ -66,7 +66,7 @@ class OrderController extends Controller
         }
 
         $group->load([
-            'users.user',
+            'users' => fn ($qry) => $qry->orderBy('nickname')->with('user'),
             'items' => function ($qry) {
                 $qry->orderBy('name')
                     ->where('one_off', false);

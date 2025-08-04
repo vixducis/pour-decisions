@@ -170,12 +170,27 @@ const ItemSelection: FC<{
 
             setFormData({ name: '', price: '' });
             setDialogState((prev) => ({ ...prev, open: false }));
-        } catch (error: any) {
-            if (error.response?.data?.errors) {
-                setErrors(error.response.data.errors);
-            } else {
-                console.error('Error creating item:', error);
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response !== undefined) {
+                    const parsed = z
+                        .object({
+                            name: z.array(z.string()).optional(),
+                            price: z.array(z.string()).optional(),
+                        })
+                        .safeParse(error.response.data.errors);
+
+                    if (parsed.success) {
+                        setErrors({
+                            name: parsed.data.name?.join(" "),
+                            price: parsed.data.name?.join(" "),
+                        });
+                        return;
+                    }
+                }
             }
+
+            console.error('Error creating item:', error);
         } finally {
             setProcessing(false);
         }

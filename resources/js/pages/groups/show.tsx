@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Check, Copy, Package, Plus, Trash2, UserPlus, Calculator } from 'lucide-react';
-import { useMoneyFormat } from '@/hooks/use-money-format';
 import { FormEventHandler, useState } from 'react';
 
 interface GroupUser {
@@ -68,7 +67,6 @@ export default function GroupShow({ group, currentUserBalance }: GroupShowProps)
     const [copied, setCopied] = useState(false);
     const [itemDialogOpen, setItemDialogOpen] = useState(false);
     const inviteUrl = `${window.location.origin}/join/${group.public_id}`;
-    const formatMoney = useMoneyFormat(group.currency);
 
     const {
         data: itemData,
