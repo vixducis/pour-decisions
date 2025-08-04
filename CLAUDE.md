@@ -37,6 +37,7 @@ This is a Laravel + React application using Inertia.js for full-stack developmen
 - `php artisan serve` - Start Laravel development server
 - `php artisan test` - Run tests directly
 - `vendor/bin/pint` - Run Laravel Pint code formatter
+- 'vendor/bin/phpstan' - Run PHPStan for code checking
 
 ### Frontend (JavaScript/TypeScript)
 - `npm run dev` - Start Vite development server

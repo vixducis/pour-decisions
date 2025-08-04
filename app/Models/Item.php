@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\HasPriceInterface;
+use Cknow\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -15,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class Item extends Model
+class Item extends Model implements HasPriceInterface
 {
     protected $table = 'items';
 
@@ -40,5 +42,13 @@ class Item extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class, 'group_id');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPrice(string $currency): Money
+    {
+        return money($this->price, $currency);
     }
 }

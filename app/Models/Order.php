@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\HasPriceInterface;
 use Cknow\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class Order extends Model
+class Order extends Model implements HasPriceInterface
 {
     protected $table = 'orders';
 
@@ -46,14 +47,12 @@ class Order extends Model
     }
 
     /**
-     * Calculates the total price of the order as a money object.
+     * @inheritDoc
      */
-    public function getTotal(Group $group): Money
+    public function getPrice(string $currency): Money
     {
-        $prices = $this->orderItems->map(
-            static fn (OrderItem $item) => $group->parsePrice($item->item->price)
-        );
-
-        return Money::sum(...$prices);
+        return $this->orderItems->isEmpty()
+            ? money(0, $currency)
+            : Money::sum(...$this->orderItems->map->getPrice($currency)->all());
     }
 }

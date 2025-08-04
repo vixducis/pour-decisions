@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\GroupUser;
-use App\Models\OrderItem;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -62,22 +61,25 @@ class GroupController extends Controller
     public function show(Group $group): Response
     {
         $group->load([
-            'users',
+            'users.user',
             'orders' => function ($qry) {
                 $qry->orderBy('created_at', 'desc')
                     ->with(['orderitems.item', 'groupUser.user']);
             },
+            'orders.orderItems.item',
+            'orders.orderItems.groupUser.user',
             'items' => function ($qry) {
                 $qry->orderBy('naam', 'asc')
                     ->where('one_off', false);
             }
         ]);
 
-        return Inertia::render('groups/show', [
+        $data = [
             'group' => [
                 'id' => $group->id,
                 'name' => $group->name,
                 'public_id' => $group->public_id,
+                'currency' => $group->currency,
                 'users' => $group->users->map(static fn($groupUser) => [
                     'id' => $groupUser->user_id,
                     'email' => $groupUser->user->email,
@@ -86,7 +88,7 @@ class GroupController extends Controller
                 ]),
                 'orders' => $group->orders->take(3)->map(static fn($order) => [
                     'id' => $order->id,
-                    'total_amount' => $order->getTotal($group)->format(),
+                    'total_amount' => $order->getPrice($group->currency)->format(),
                     'created_at' => $order->created_at,
                     'items_count' => $order->orderItems->count(),
                     'created_by' => $order->groupUser ? [
@@ -96,11 +98,31 @@ class GroupController extends Controller
                 'items' => $group->items->map(static fn($item) => [
                     'id' => $item->id,
                     'name' => $item->name,
-                    'price' => $group->parsePrice($item->price)->format(),
+                    'price' => $item->getPrice($group->currency)->format(),
                     'one_off' => $item->one_off,
                     'created_at' => $item->created_at,
                 ]),
-            ]
-        ]);
+            ],
+        ];
+
+
+        // Calculate current user's balance
+        $currentUser = auth('web')->user();
+        $currentGroupUser = $group->users->first(fn($groupUser) => $groupUser->user_id === $currentUser->id);
+        if ($currentGroupUser) {
+            $paidMoney = $currentGroupUser->getPaidAmount($group->currency);
+            $consumedMoney = $currentGroupUser->getConsumedAmount($group->currency);
+            $balanceMoney = $paidMoney->subtract($consumedMoney);
+            $balanceStatus = $balanceMoney->isZero() ? 'zero' : ($balanceMoney->isPositive() ? 'positive' : 'negative');
+
+            $data['currentUserBalance'] = [
+                'paid' => $paidMoney->format(),
+                'consumed' => $consumedMoney->format(),
+                'balance' => $balanceMoney->format(),
+                'balance_status' => $balanceStatus,
+            ];
+        }
+
+        return Inertia::render('groups/show', $data);
     }
 }

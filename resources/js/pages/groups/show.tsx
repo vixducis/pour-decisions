@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Check, Copy, Package, Plus, Trash2, UserPlus } from 'lucide-react';
+import { Check, Copy, Package, Plus, Trash2, UserPlus, Calculator } from 'lucide-react';
+import { useMoneyFormat } from '@/hooks/use-money-format';
 import { FormEventHandler, useState } from 'react';
 
 interface GroupUser {
@@ -39,14 +40,23 @@ interface GroupDetails {
     id: number;
     name: string;
     public_id: string;
+    currency: string;
     users: GroupUser[];
     orders: Order[];
     items: Item[];
     total_expenses: number;
 }
 
+interface UserBalance {
+    paid: string;
+    consumed: string;
+    balance: string;
+    balance_status: 'positive' | 'negative' | 'zero';
+}
+
 interface GroupShowProps {
     group: GroupDetails;
+    currentUserBalance?: UserBalance;
 }
 
 type ItemForm = {
@@ -54,10 +64,11 @@ type ItemForm = {
     price: string;
 };
 
-export default function GroupShow({ group }: GroupShowProps) {
+export default function GroupShow({ group, currentUserBalance }: GroupShowProps) {
     const [copied, setCopied] = useState(false);
     const [itemDialogOpen, setItemDialogOpen] = useState(false);
     const inviteUrl = `${window.location.origin}/join/${group.public_id}`;
+    const formatMoney = useMoneyFormat(group.currency);
 
     const {
         data: itemData,
@@ -335,6 +346,60 @@ export default function GroupShow({ group }: GroupShowProps) {
                             )}
                         </CardContent>
                     </Card>
+
+
+                    {/* Settlements Card */}
+                    <Link href={route('groups.settlements', group.id)}>
+                        <Card className="border-white/20 bg-white/50 backdrop-blur-sm dark:border-white/10 dark:bg-white/5 transition-all duration-200 hover:bg-white/60 dark:hover:bg-white/10 cursor-pointer">
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg">Your Balance</CardTitle>
+                                    <Calculator className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {currentUserBalance ? (
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">You paid:</span>
+                                            <span className="font-medium">{currentUserBalance.paid}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">You consumed:</span>
+                                            <span className="font-medium">{currentUserBalance.consumed}</span>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-3">
+                                            {currentUserBalance.balance_status === 'zero' ? (
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground">Status:</span>
+                                                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                                        <Check className="h-4 w-4" />
+                                                        <span className="font-medium">All settled</span>
+                                                    </div>
+                                                </div>
+                                            ) : currentUserBalance.balance_status === 'positive' ? (
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground">You're owed:</span>
+                                                    <span className="font-bold text-blue-600 dark:text-blue-400">
+                                                        {currentUserBalance.balance}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground">You owe:</span>
+                                                    <span className="font-bold text-orange-600 dark:text-orange-400">
+                                                        {currentUserBalance.balance.replace('-', '')}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No expenses yet</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </Link>
                 </div>
             </div>
         </AppLayout>

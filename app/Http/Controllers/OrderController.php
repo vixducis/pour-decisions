@@ -40,7 +40,7 @@ class OrderController extends Controller
             ],
             'orders' => $group->orders->map(static fn($order) => [
                 'id' => $order->id,
-                'total_amount' => $order->getTotal($group)->format(),
+                'total_amount' => $order->getPrice($group->currency)->format(),
                 'created_at' => $order->created_at,
                 'items_count' => $order->orderItems->count(),
                 'created_by' => $order->groupUser ? [
@@ -49,7 +49,7 @@ class OrderController extends Controller
                 'items' => $order->orderItems->map(fn($orderItem) => [
                     'id' => $orderItem->id,
                     'name' => $orderItem->item->name,
-                    'price' => $group->parsePrice($orderItem->item->price)->format(),
+                    'price' => $orderItem->getPrice($group->currency)->format(),
                     'user_nickname' => $orderItem->groupUser ? $orderItem->groupUser->nickname : null,
                 ])->all(),
             ])->all(),
@@ -73,15 +73,7 @@ class OrderController extends Controller
             },
         ]);
 
-        $duplicateOrder = null;
-        if ($request->has('duplicate')) {
-            $duplicateOrder = Order::query()
-                ->where('group_id', $group->id)
-                ->with(['orderItems.item', 'orderItems.groupUser.user'])
-                ->find($request->get('duplicate'));
-        }
-
-        return Inertia::render('orders/create', [
+        $data = [
             'group' => [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -103,18 +95,32 @@ class OrderController extends Controller
                     ];
                 })->all(),
             ],
-            'duplicateOrder' => $duplicateOrder ? [
-                'id' => $duplicateOrder->id,
-                'items' => $duplicateOrder->orderItems->map(function ($orderItem) {
-                    return [
-                        'itemId' => $orderItem->item->id,
-                        'userId' => $orderItem->group_user_id,
-                        'itemName' => $orderItem->item->name,
-                        'itemPrice' => $orderItem->item->price,
-                    ];
-                })->all(),
-            ] : null,
-        ]);
+        ];
+
+        $duplicateId = $request->input('duplicate');
+        if (is_string($duplicateId)) {
+            $duplicateOrder = Order::query()
+                ->where('group_id', $group->id)
+                ->with(['orderItems.item', 'orderItems.groupUser.user'])
+                ->find($duplicateId);
+
+            if ($duplicateOrder !== null) {
+                $data['duplicateOrder'] = [
+                    'id' => $duplicateOrder->id,
+                    'items' => $duplicateOrder
+                        ->orderItems
+                        ->map(fn($orderItem) => [
+                            'itemId' => $orderItem->item->id,
+                            'userId' => $orderItem->group_user_id,
+                            'itemName' => $orderItem->item->name,
+                            'itemPrice' => $orderItem->item->price,
+                        ])
+                        ->all()
+                ];
+            }
+        }
+
+        return Inertia::render('orders/create', $data);
     }
 
     /**
@@ -171,7 +177,7 @@ class OrderController extends Controller
      */
     public function destroy(Order $order): RedirectResponse
     {
-        $group = $order->group;        
+        $group = $order->group;
         if (auth('web')->user()->cannot('update', $group)) {
             abort(HttpResponse::HTTP_FORBIDDEN);
         }

@@ -1,8 +1,14 @@
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { BackAction } from '@/types';
-import { Link } from '@inertiajs/react';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { ArrowLeft, LogOut, Settings } from 'lucide-react';
 import { FC } from 'react';
 
 interface AppToolbarProps {
@@ -28,9 +34,22 @@ export function AppToolbar({ className, actions, backAction }: AppToolbarProps) 
 
             <div className="flex items-center space-x-2">
                 {actions}
-                <Button variant="ghost" size="sm">
-                    <Settings className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                            <Settings className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                            onClick={() => router.post(route('logout'))}
+                            className="cursor-pointer"
+                        >
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Sign out
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </div>
     );

@@ -66,12 +66,4 @@ class Group extends Model
     {
         return $this->hasMany(Order::class, 'group_id');
     }
-
-    /**
-     * Formats a price string into a money object.
-     */
-    public function parsePrice(string $price): Money
-    {
-        return money($price, $this->currency);
-    }
 }

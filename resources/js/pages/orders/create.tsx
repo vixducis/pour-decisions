@@ -49,7 +49,7 @@ interface DuplicateOrder {
 
 interface OrderCreateProps {
     group: GroupDetails;
-    duplicateOrder: DuplicateOrder | null;
+    duplicateOrder: DuplicateOrder | undefined;
 }
 
 interface SelectedItem {
@@ -92,7 +92,7 @@ export default function OrderCreate({ group, duplicateOrder }: OrderCreateProps)
 
     const getInitialSelectedItems = (() => {
         const map = new Map<number, SelectedItem>();
-        if (duplicateOrder !== null) {
+        if (duplicateOrder !== undefined) {
             duplicateOrder.items.forEach((item) => {
                 map.set(item.userId, item);
             });

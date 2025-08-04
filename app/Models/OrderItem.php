@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\HasPriceInterface;
+use Cknow\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -11,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $item_id
  * @property int $group_user_id
  */
-class OrderItem extends Model
+class OrderItem extends Model implements HasPriceInterface
 {
     protected $table = 'order_items';
     public $timestamps = false;
@@ -44,5 +46,13 @@ class OrderItem extends Model
     public function groupUser(): BelongsTo
     {
         return $this->belongsTo(GroupUser::class, 'group_user_id');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPrice(string $currency): Money
+    {
+        return $this->item->getPrice($currency);
     }
 }
