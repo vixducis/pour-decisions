@@ -106,19 +106,12 @@ export default function Groups({ groups }: GroupsProps) {
                 </div>
 
                 {groups.length === 0 ? (
-                    <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-100 shadow-lg dark:from-blue-900/20 dark:to-indigo-900/20">
-                        <CardContent className="flex flex-col items-center justify-center py-8">
-                            <div className="mb-4 text-6xl">🎉</div>
-                            <p className="mb-4 text-lg font-medium text-gray-700 dark:text-gray-300">No groups yet</p>
-                            <p className="mb-6 max-w-md text-center text-sm text-muted-foreground">
-                                Create your first group to start tracking expenses with others and make managing shared costs fun!
-                            </p>
-                            <Button onClick={() => setDialogOpen(true)} variant="gradient">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Create Your First Group
-                            </Button>
-                        </CardContent>
-                    </Card>
+                    <div className="py-8 text-center">
+                        <p className="text-lg font-medium text-gray-700 dark:text-gray-300">No groups yet</p>
+                        <p className="mt-2 max-w-md mx-auto text-sm text-muted-foreground">
+                            Create your first group to start tracking expenses with others and make managing shared costs fun!
+                        </p>
+                    </div>
                 ) : (
                     <div className="grid gap-0 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
                         {groups.map((group) => (
