@@ -60,7 +60,7 @@ class GroupController extends Controller
 
     public function show(Group $group): Response
     {
-        $group->load([
+        $group->loadMissing([
             'users' => fn ($qry) => $qry->orderBy('nickname')->with('user'),
             'orders' => function ($qry) {
                 $qry->orderBy('created_at', 'desc')

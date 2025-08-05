@@ -61,10 +61,6 @@ class OrderController extends Controller
      */
     public function create(Group $group, Request $request): Response
     {
-        if ($request->user()->cannot('update', $group)) {
-            abort(HttpResponse::HTTP_FORBIDDEN);
-        }
-
         $group->load([
             'users' => fn ($qry) => $qry->orderBy('nickname')->with('user'),
             'items' => function ($qry) {
@@ -72,6 +68,10 @@ class OrderController extends Controller
                     ->where('one_off', false);
             },
         ]);
+        
+        if ($request->user()->cannot('update', $group)) {
+            abort(HttpResponse::HTTP_FORBIDDEN);
+        }
 
         $data = [
             'group' => [

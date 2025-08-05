@@ -13,10 +13,6 @@ class SettlementsController extends Controller
 {
     public function index(Group $group, Request $request): Response
     {
-        if ($request->user()->cannot('view', $group)) {
-            abort(HttpResponse::HTTP_FORBIDDEN);
-        }
-
         $group->load([
             'users' => fn($qry) => $qry->with([
                 'user',
@@ -26,6 +22,10 @@ class SettlementsController extends Controller
             'orders.orderItems.item',
             'orders.orderItems.groupUser.user',
         ]);
+
+        if ($request->user()->cannot('view', $group)) {
+            abort(HttpResponse::HTTP_FORBIDDEN);
+        }
 
         // Calculate balances using convenience methods
         $userBalances = [];
